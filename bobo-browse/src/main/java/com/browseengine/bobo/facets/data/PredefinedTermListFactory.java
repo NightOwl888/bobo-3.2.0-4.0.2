@@ -16,15 +16,13 @@ import java.util.Map;
  * <li> {@link Long}</li>
  * <li> {@link Date}</li>
  * </ul>
- * 
+ *
  * Autoboxing: primitive types corresponding classes above are supported.
  */
-public class PredefinedTermListFactory<T> implements TermListFactory<T>
-{
+public class PredefinedTermListFactory<T> implements TermListFactory<T> {
   private static Map<Class<?>, Class<? extends TermValueList<?>>> supportedTypes = new HashMap<Class<?>, Class<? extends TermValueList<?>>>();
 
-  static
-  {
+  static {
     supportedTypes.put(int.class, TermIntList.class);
     supportedTypes.put(float.class, TermFloatList.class);
     supportedTypes.put(char.class, TermCharList.class);
@@ -44,52 +42,48 @@ public class PredefinedTermListFactory<T> implements TermListFactory<T>
   private final String _format;
   private final Class<? extends TermValueList<T>> _listClass;
 
-  public PredefinedTermListFactory(Class<?> cls, String format)
-  {
-    if (supportedTypes.get(cls) == null)
-    {
+  @SuppressWarnings("unchecked")
+  public PredefinedTermListFactory(Class<T> cls, String format) {
+    if (supportedTypes.get(cls) == null) {
       throw new IllegalArgumentException("Class " + cls + " not defined.");
     }
-    _cls = (Class<T>) cls;
+    _cls = cls;
     _format = format;
     _listClass = (Class<? extends TermValueList<T>>) supportedTypes.get(_cls);
   }
 
-  public PredefinedTermListFactory(Class<?> cls)
-  {
+  public PredefinedTermListFactory(Class<T> cls) {
     this(cls, null);
   }
 
-  public TermValueList<T> createTermList(int capacity)
-  {
+  @Override
+  public TermValueList<T> createTermList(int capacity) {
     if (TermCharList.class.equals(_listClass)) // we treat char type separate as
                                                // it does not have a format
                                                // string
     {
       @SuppressWarnings("unchecked")
-      TermValueList<T> retlist = (TermValueList<T>) (new TermCharList(capacity));;
+      TermValueList<T> retlist = (TermValueList<T>) (new TermCharList(capacity));
+      ;
       return retlist;
-    } else
-    {
-      try
-      {
-        Constructor<? extends TermValueList<T>> constructor = _listClass
-            .getConstructor(int.class, String.class); // the constructor also takes the format String as parameter
+    } else {
+      try {
+        Constructor<? extends TermValueList<T>> constructor = _listClass.getConstructor(int.class,
+          String.class); // the constructor also takes the format String as parameter
         return constructor.newInstance(capacity, _format);
-      } catch (Exception e)
-      {
+      } catch (Exception e) {
         throw new RuntimeException(e.getMessage());
       }
     }
   }
 
-  public TermValueList<T> createTermList()
-  {
+  @Override
+  public TermValueList<T> createTermList() {
     return createTermList(-1);
   }
 
-  public Class<T> getType()
-  {
+  @Override
+  public Class<T> getType() {
     // TODO Auto-generated method stub
     return _cls;
   }
